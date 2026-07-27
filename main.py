@@ -24,8 +24,19 @@ system_msg = """Assistant helps the current user retrieve the list of their rece
 welcome_message = """Hi! I'm an helpful assistant and I can help fetch information about your recent transactions.\n\nTry asking me: "What are my recent transactions?"
 """
 
+def get_access_password():
+    password = os.getenv("DVLA_ACCESS_PASSWORD")
+    if password:
+        return password
+
+    try:
+        return st.secrets.get("DVLA_ACCESS_PASSWORD")
+    except Exception:
+        return None
+
+
 def require_access_password():
-    expected_password = os.getenv("DVLA_ACCESS_PASSWORD")
+    expected_password = get_access_password()
     if not expected_password:
         st.error("DVLA_ACCESS_PASSWORD is not configured.")
         st.stop()
@@ -38,7 +49,7 @@ def require_access_password():
         submitted = st.form_submit_button("Enter")
 
     if submitted:
-        if hmac.compare_digest(password, expected_password):
+        if hmac.compare_digest(password.strip(), str(expected_password).strip()):
             st.session_state.authenticated = True
             st.rerun()
         st.error("Invalid access password.")
