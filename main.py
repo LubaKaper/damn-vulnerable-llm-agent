@@ -1,6 +1,7 @@
 import langchain
 import streamlit as st
 import os
+import hmac
 from dotenv import load_dotenv
 from langchain.agents import ConversationalChatAgent, AgentExecutor
 from langchain.callbacks import StreamlitCallbackHandler
@@ -23,8 +24,31 @@ system_msg = """Assistant helps the current user retrieve the list of their rece
 welcome_message = """Hi! I'm an helpful assistant and I can help fetch information about your recent transactions.\n\nTry asking me: "What are my recent transactions?"
 """
 
+def require_access_password():
+    expected_password = os.getenv("DVLA_ACCESS_PASSWORD")
+    if not expected_password:
+        st.error("DVLA_ACCESS_PASSWORD is not configured.")
+        st.stop()
+
+    if st.session_state.get("authenticated"):
+        return
+
+    with st.form("access_form"):
+        password = st.text_input("Access password", type="password")
+        submitted = st.form_submit_button("Enter")
+
+    if submitted:
+        if hmac.compare_digest(password, expected_password):
+            st.session_state.authenticated = True
+            st.rerun()
+        st.error("Invalid access password.")
+
+    st.stop()
+
+
 st.set_page_config(page_title="Damn Vulnerable LLM Agent")
 st.title("Damn Vulnerable LLM Agent")
+require_access_password()
 
 hide_st_style = """
             <style>
@@ -86,6 +110,3 @@ if prompt := st.chat_input(placeholder="Show my recent transactions"):
 
 display_instructions()
 display_logo()
-
-
-        

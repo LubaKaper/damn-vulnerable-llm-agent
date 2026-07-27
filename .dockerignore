@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.env.*
+.git
+.gitignore
+__pycache__
+*.pyc
+env/
+transactions.db
+rate_limit.db

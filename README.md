@@ -59,10 +59,30 @@ To build and run the Docker image:
 ```sh
 docker build -t dvla .
 
-# Populate the env.list with necessary environment variables (just the OpenAI API key), then run:
+# Populate the env.list with necessary environment variables, then run:
 docker run --env-file env.list -p 8501:8501 dvla
 
 ```
+
+For an OpenAI-backed deployment, `env.list` should contain:
+
+```sh
+model_name=openai-gpt-4o
+OPENAI_API_KEY=<open ai api key>
+DVLA_ACCESS_PASSWORD=<strong access password>
+```
+
+## Safer Training Deployment
+
+This application is intentionally vulnerable and should not be exposed as a public production service. For a training deployment:
+
+- Require `DVLA_ACCESS_PASSWORD` for all deployments.
+- Put the service behind a private network, VPN, reverse proxy authentication, or platform-level access control when possible.
+- Use a disposable API key with a tight budget limit.
+- Do not deploy real user data; the bundled challenge data is seeded automatically.
+- Prefer a short-lived environment and tear it down after the exercise.
+
+The Docker image listens on `PORT` when the platform provides it, otherwise it defaults to `8501`. Use `/_stcore/health` as the health check path.
 
 ## Usage
 
